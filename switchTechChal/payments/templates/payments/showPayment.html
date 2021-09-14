@@ -1,0 +1,11 @@
+<h1>Payment {{ payment_id }}</h1>
+
+<ul>
+    <li>{{ payment }}</li>
+</ul>
+
+<a class="btn btn-primary" href="{% url 'payments:deletePayment' payment_id %}"><button type="button" style="color:white; background-color: red;" onclick="">Delete Payment</button></a>
+<a class="btn btn-primary" href="{% url 'payments:allPayments' %}"><button type="button" onclick="">All Payments</button></a>
+{% if notSettled %}
+    <a class="btn btn-primary" href="{% url 'payments:settlePayment' payment_id %}"><button type="button" style="color: black; background-color: cyan;" onclick="">Settle Payment</button></a>
+{% endif %}

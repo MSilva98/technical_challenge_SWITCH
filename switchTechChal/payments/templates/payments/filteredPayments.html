@@ -1,0 +1,27 @@
+<h1>Filtered Payments by {{ filter }}</h1>
+
+{% if payment_id %}
+<b>{{ filter }}:</b> {{payment_id }}
+{% elif min %}
+<b>{{ filter }}:</b><p>Min: {{ min }}</p><p>Max:{{max}}</p>
+{% elif status %}
+<b>{{ filter }}:</b> {{status}}
+{% elif method %}
+<b>{{ filter }}:</b> {{method}}
+{% endif %}
+
+
+{% if allPayments %}
+    <ul>
+    {% for payment in allPayments %}
+        <li><a href="{% url 'payments:showPayment' payment.payment_id %}">{{ payment }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No payments are available.</p>
+{% endif %}
+
+
+<a class="btn btn-primary" href="{% url 'payments:allPayments' %}"><button type="button" onclick="">Back</button></a>
+
+

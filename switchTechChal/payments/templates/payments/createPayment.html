@@ -1,0 +1,20 @@
+<form action="" method="post">
+    {% csrf_token %}
+    {% for field in form %}
+        <div class="row">
+            <div class="col-md-2"> 
+                {% if not field.is_hidden %}
+                    {{ field.label_tag }}
+                {% endif %}
+                {% if field.help_text %}
+                <sup>{{ field.help_text }}</sup>
+                {% endif %}
+                {{ field.errors }}
+            </div><div class="col-md-10 pull-left">
+                {{ field }}
+            </div>
+        </div>
+    {% endfor %}
+
+    <input type="submit" value="Create Payment">
+</form>

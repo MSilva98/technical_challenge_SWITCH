@@ -1,0 +1,13 @@
+<h1>All Payments</h1>
+
+{% if allPayments %}
+    <ul>
+    {% for payment in allPayments %}
+        <li><a href="{% url 'payments:showPayment' payment.payment_id %}">{{ payment }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No payments are available.</p>
+{% endif %}
+
+<a class="btn btn-primary" href="{% url 'payments:newPayment' %}"><button type="button" onclick="">New Payment</button></a>
