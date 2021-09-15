@@ -1,0 +1,60 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <title>Filter Refunds</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+  </head>
+  <body>
+    <main role="main" class="container">
+      <h3>Filter Refunds</h3>
+      <hr />
+      <form method="GET" action=".">
+        <div class="form-row">
+          <div class="form-group col-12">
+              <label for="refund_id">Refund ID</label>
+              <select id="refund_id" class="form-control" name="refund_id">
+              <option selected>Choose...</option>
+              {% for p in refund_ids %}
+              <option value="{{ p }}">{{ p }}</option>
+              {% endfor %}
+              </select>
+          </div>        
+      </div>
+        <div class="form-row">
+            <div class="form-group col-12">
+                <label for="payment_id">Payment ID</label>
+                <select id="payment_id" class="form-control" name="payment_id">
+                <option selected>Choose...</option>
+                {% for p in payment_ids %}
+                <option value="{{ p }}">{{ p }}</option>
+                {% endfor %}
+                </select>
+            </div>        
+        </div>
+        <a href="{% url 'refunds:allRefunds' %}"><button type="button" class="btn btn-primary" onclick="">Back</button></a>
+        <a href="{% url 'refunds:searchRefunds' %}"><button style="float: right; margin-left: 1%;" type="button" class="btn btn-warning">Clear Filters</button></a>
+        <button style="float: right;" type="submit" class="btn btn-success">Search</button>
+    </form>
+      <hr />
+
+      <div class="row">
+        <ul>
+          {% for refund in refunds %}
+            <li>
+                <a href="{% url 'refunds:showRefund' refund.refund_id %}">{{ refund }}</a>
+            </li>
+            <hr />
+          {% endfor %}
+        </ul>
+      </div>
+
+    </main>
+
+</body>
+
+</html>

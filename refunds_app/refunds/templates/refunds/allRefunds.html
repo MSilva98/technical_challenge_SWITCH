@@ -1,0 +1,38 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <title>All Refunds</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+  </head>
+  <body>
+    
+    <main role="main" class="container">
+        <h3>All Refunds</h3>
+        
+        {% if allRefunds %}
+            <ul>
+                <hr />
+            {% for refund in allRefunds %}
+                <li>
+                  <b>Refund ID:</b><a href="{% url 'refunds:showRefund' refund.refund_id %}"> {{ refund.refund_id }}</a>
+                </li>
+                <li>
+                  <b>Associated Payment ID:</b><a href="{{payments_url}}payment/{{refund.payment_id}}"> {{ refund.payment_id }}</a>
+                </li>
+                <hr />
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No refunds are available.</p>
+        {% endif %}
+        
+        <a href="{% url 'refunds:newRefund' %}"><button type="button" class="btn btn-success" onclick="">New Refund</button></a>
+        <a href="{% url 'refunds:searchRefunds' %}"><button style="float: right;" type="button" class="btn btn-primary" onclick="">Filter Refunds</button></a>    
+  
+    </main>
+  </body>

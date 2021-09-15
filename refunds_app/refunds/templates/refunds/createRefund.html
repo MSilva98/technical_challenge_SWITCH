@@ -1,0 +1,60 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <title>New Refund</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+  </head>
+  <body>
+    <main role="main" class="container">
+
+    <h3>New Refund</h3>
+    <hr />
+    <form action="." method="post">  
+        {% csrf_token %}
+        <div class="form-row">
+            <div class="form-group col-12">
+                <label for="id_refund_id">Refund ID</label>
+                <input type="text" class="form-control" required id="id_refund_id" value="{{ form.refund_id.value }}" readonly='readonly' name="refund_id">
+                <input type="hidden" class="form-control" id="initial-id_refund_id" value="{{ form.refund_id.value }}" name="initial-refund_id">
+            </div>        
+        </div>
+        <div class="form-row">
+            <div class="form-group col-12">
+                <label for="id_payment_id">Payment ID</label>
+                <select id="id_payment_id" class="form-control" name="payment_id">
+                {% for p in payment_amount %}
+                <option value="{{ p.0 }}">{{ p.0 }}  Remaining Amount: {{ p.1 }}</option>
+                {% endfor %}
+                </select>
+            </div>       
+        </div>
+
+        <div class="form-row">
+            {% for field in form.visible_fields %}
+            {% if field.label != 'Refund id' and field.label != 'Payment id' %}
+                <div class="form-group col-md-4 col-lg-3">
+                    <label for="id_amount">{{ field.label_tag }}</label>
+                    {{ field }}</span>
+                </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        <input type="submit" class="btn btn-success" value="Create Refund">
+    </form>
+    <hr/>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}    
+    </main>
+</body>
+
+</html>

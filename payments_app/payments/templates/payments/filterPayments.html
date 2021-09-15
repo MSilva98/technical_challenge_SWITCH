@@ -31,7 +31,7 @@
                 <select id="status" class="form-control" name="status">
                 <option selected>Choose...</option>
                 {% for st in status %}
-                <option value="{{ st }}">{{ st }}</option>
+                <option value="{{ st }}">{{ st.0 }}</option>
                 {% endfor %}
                 </select>
             </div>
@@ -40,7 +40,7 @@
                 <select id="payment_method" class="form-control" name="payment_method">
                 <option selected>Choose...</option>
                 {% for p in pay_method %}
-                <option value="{{ p }}">{{ p }}</option>
+                <option value="{{ p }}">{{ p.0 }}</option>
                 {% endfor %}
                 </select>
             </div>

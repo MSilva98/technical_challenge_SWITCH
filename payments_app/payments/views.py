@@ -1,20 +1,26 @@
 from django import forms
 from django.db.models import base
 from django.db.models.base import Model
-from django.http.response import Http404, HttpResponsePermanentRedirect, HttpResponseRedirect
+from django.forms.models import model_to_dict
+from django.http.response import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.http import HttpResponse
-from django.template import loader
 
 from .models import Base, CreditCard, MbWay, BaseForm, CreditCardForm, MbWayForm
-from .forms import FilterForm, SettleForm
+from .forms import SettleForm
 
-# Create your views here.
-def listAll(request):
+def listAllPayments(request):
     allPayments = Base.objects.all()
     return render(request, 'payments/allPayments.html', {'allPayments': allPayments})
 
-def showPayment(request, payment_id):
+def getAllPaymentsID(request):
+    allPaymentsID = [payment_id for payment_id in Base.objects.values_list('payment_id', flat=True)]
+    return JsonResponse({'paymentsID': allPaymentsID})
+
+def getAllPayments(request):
+    allPayments = [model_to_dict(payment) for payment in Base.objects.all()]
+    return JsonResponse({'payments': allPayments})
+
+def findPayment(payment_id):
     payment = get_object_or_404(Base, payment_id=payment_id)    
     # credit_card
     if payment.payment_method == Base.CC:   
@@ -22,6 +28,14 @@ def showPayment(request, payment_id):
     # MBWay
     else:                                   
         full_payment = MbWay.objects.get(payment_id=payment_id)
+    return payment, full_payment
+
+def getPayment(request, payment_id):
+    payment, _ = findPayment(payment_id)
+    return JsonResponse(model_to_dict(payment))
+
+def showPayment(request, payment_id):
+    payment, full_payment = findPayment(payment_id)
     return render(request, 'payments/showPayment.html', {'payment_id': payment_id, 'payment': full_payment, 'notSettled': payment.amount!=payment.settled_amount})
 
 def is_valid_queryparam(param):
@@ -69,7 +83,7 @@ def filter(request):
     return payments
 
 def filterView(request):
-    return render(request, 'payments/filteredPayments.html', {'payments': filter(request), 'payment_ids': list(Base.objects.all().values_list('payment_id', flat=True)), 'status': (Base.SUCCESS, Base.SETTLED, Base.ERROR), 'pay_method': (Base.CC, Base.MBWay)})
+    return render(request, 'payments/filterPayments.html', {'payments': filter(request), 'payment_ids': list(Base.objects.all().values_list('payment_id', flat=True)), 'status': Base.statusOP, 'pay_method': Base.pay_method})
 
 def newPayment(request):
     form = BaseForm(request.POST or None)
@@ -112,6 +126,8 @@ def settlePayment(request, payment_id):
             payment.settled_at = form['settled_at'].value()
             if amt == amount:
                 payment.status = Base.SETTLED
+            else:
+                payment.status = Base.SUCCESS
             payment.save()
             return redirect('payments:showPayment', payment_id)
     return render(request, 'payments/settlePayment.html', {'payment_id': payment_id, 'form': form})

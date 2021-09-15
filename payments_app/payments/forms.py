@@ -10,8 +10,8 @@ class SettleForm(forms.Form):
         super(SettleForm, self).__init__(*args, **kwargs)        
         self.fields['payment_id'] = forms.CharField(widget=widgets.TextInput(attrs={'readonly': 'readonly', 'class': 'form-control'}), initial=pay_id, disabled=True)
         self.fields['amount'] = forms.FloatField(widget=widgets.NumberInput(attrs={'readonly': 'readonly', 'class': 'form-control'}), disabled=True, initial=amt)                
-        self.fields['settled_at'] = forms.DateTimeField(widget=widgets.TextInput(attrs={'class': 'form-control', 'type': 'date'}),required=False, initial=sttl_at) 
-        self.fields['settled_amount'] = forms.FloatField(widget=widgets.NumberInput(attrs={'class': 'form-control'}),required=False, max_value=amt, min_value=sttl_amt, initial=sttl_amt)
+        self.fields['settled_at'] = forms.DateTimeField(widget=widgets.TextInput(attrs={'class': 'form-control', 'type': 'date'}),required=True, initial=sttl_at) 
+        self.fields['settled_amount'] = forms.FloatField(widget=widgets.NumberInput(attrs={'class': 'form-control'}),required=True, max_value=amt, min_value=sttl_amt, initial=sttl_amt)
 
 class FilterForm(forms.Form):
     filter_choices = (
