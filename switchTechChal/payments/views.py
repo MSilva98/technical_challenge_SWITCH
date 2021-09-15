@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from django.template import loader
 
 from .models import Base, CreditCard, MbWay, BaseForm, CreditCardForm, MbWayForm
-from .forms import SettleForm
+from .forms import FilterForm, SettleForm
 
 # Create your views here.
 def listAll(request):
@@ -24,40 +24,62 @@ def showPayment(request, payment_id):
         full_payment = MbWay.objects.get(payment_id=payment_id)
     return render(request, 'payments/showPayment.html', {'payment_id': payment_id, 'payment': full_payment, 'notSettled': payment.amount!=payment.settled_amount})
 
-def searchByPaymentId(request, payment_id):
-    allPayments = Base.objects.filter(payment_id=payment_id)
-    return render(request, 'payments/filteredPayments.html', {'allPayments': allPayments, 'filter': 'payment_id', 'payment_id': payment_id})
+def is_valid_queryparam(param):
+    return param != '' and param is not None
 
-def searchByAmount(request, min_amount=None, max_amount=None):
-    allPayments = Base.objects.filter(amount__lte=max_amount, amount__gte=min_amount)
-    return render(request, 'payments/filteredPayments.html', {'allPayments': allPayments, 'filter': 'amount', 'min': min_amount, 'max': max_amount})
+def filter(request):
+    payments = Base.objects.all()
+    payment_id = request.GET.get('payment_id')
+    min_amount = request.GET.get('min_amount')
+    max_amount = request.GET.get('max_amount')
+    payment_method = request.GET.get('payment_method')
+    status = request.GET.get('status')
+    min_created_at = request.GET.get('min_created_at')
+    max_created_at = request.GET.get('max_created_at')
+    min_settled_at = request.GET.get('min_settled_at')
+    max_settled_at = request.GET.get('max_settled_at')
 
-def searchByMethod(request, method):
-    allPayments = Base.objects.filter(payment_method=method)
-    return render(request, 'payments/filteredPayments.html', {'allPayments': allPayments, 'filter': 'payment_method', 'method': method})
+    if is_valid_queryparam(payment_id) and payment_id != "Choose...":
+        payments = payments.filter(payment_id=payment_id)
 
-def searchByStatus(request, status):
-    allPayments = Base.objects.filter(status=status)
-    return render(request, 'payments/filteredPayments.html', {'allPayments': allPayments, 'filter': 'status', 'status': status})
+    if is_valid_queryparam(min_amount):
+        payments = payments.filter(amount__gte=min_amount)
 
-def searchByCreation(request, min_created=None, max_created=None):
-    allPayments = Base.objects.filter(created_at__lte=max_created, created_at__gte=min_created)
-    return render(request, 'payments/filteredPayments.html', {'allPayments': allPayments, 'filter': 'creation_date', 'min': min_created, 'max': max_created})
+    if is_valid_queryparam(max_amount):
+        payments = payments.filter(amount__lte=max_amount)
 
-def searchBySettlement(request, min_settle=None, max_settle=None):
-    allPayments = Base.objects.filter(settled_amount__lte=max_settle, settled_amount__gte=min_settle)
-    return render(request, 'payments/filteredPayments.html', {'allPayments': allPayments, 'filter': 'settled_amount', 'min': min_settle, 'max': max_settle})
+    if is_valid_queryparam(payment_method) and payment_method != "Choose...":
+        payments = payments.filter(payment_method=payment_method)
+
+    if is_valid_queryparam(status) and status != "Choose...":
+        payments = payments.filter(status=status)
+
+    if is_valid_queryparam(min_created_at):
+        payments = payments.filter(created_at__gte=min_created_at)
+
+    if is_valid_queryparam(max_created_at):
+        payments = payments.filter(created_at__lt=max_created_at)
+
+    if is_valid_queryparam(min_settled_at):
+        payments = payments.filter(settled_at__gte=min_settled_at)
+
+    if is_valid_queryparam(max_settled_at):
+        payments = payments.filter(settled_at__lt=max_settled_at)
+
+    return payments
+
+def filterView(request):
+    return render(request, 'payments/filteredPayments.html', {'payments': filter(request), 'payment_ids': list(Base.objects.all().values_list('payment_id', flat=True)), 'status': (Base.SUCCESS, Base.SETTLED, Base.ERROR), 'pay_method': (Base.CC, Base.MBWay)})
 
 def newPayment(request):
     form = BaseForm(request.POST or None)
     payment_id = form['payment_id'].value()
     if form.is_valid():
         form.save()
-        payment_method = form['payment_method'].value()
         request.session['payment_id'] = payment_id
-        request.session['payment_method'] = payment_method
+        request.session['payment_method'] = form['payment_method'].value()
         return redirect('payments:processPayment')
-    return render(request, 'payments/createPayment.html', {'payment_id': payment_id, 'form': form})
+    return render(request, 'payments/createPayment.html', {'form': form})
 
 def processPayment(request):
     payment_method = request.session['payment_method']
@@ -75,7 +97,7 @@ def processPayment(request):
             basePayment.status = Base.SUCCESS
         basePayment.save()
         return redirect('payments:allPayments')
-    return render(request, 'payments/processPayment.html', {'form': form})
+    return render(request, 'payments/processPayment.html', {'form': form, 'payment_method': payment_method})
 
 def settlePayment(request, payment_id):
     payment = get_object_or_404(Base, payment_id=payment_id)

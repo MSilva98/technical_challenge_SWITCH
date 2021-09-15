@@ -19,8 +19,8 @@ class Base(models.Model):
     payment_method = models.CharField(max_length=50, default=CC, choices=[(CC, 'credit_card'), (MBWay, 'mbway')])
     created_at = models.DateTimeField(auto_now_add=True)          
     status = models.CharField(max_length=20, choices=[(SUCCESS, 'success'), (ERROR, 'error'), (SETTLED, 'settled')])
-    settled_at = models.DateTimeField(null=True)             
-    settled_amount = models.FloatField(null=True)
+    settled_at = models.DateTimeField(null=True, blank=True)             
+    settled_amount = models.FloatField(null=True, blank=True, default=0)
     def __str__(self):
         baseStr = "Payment ID: " + str(self.payment_id) + ", Amount: " + str(self.amount) + "€, Method: " + self.payment_method + ", Created at: " + str(self.created_at) + ", Status: " + self.status 
         if self.settled_at != None:
@@ -45,29 +45,29 @@ class MbWay(models.Model):
         return str(self.payment_id) + ", Phone Number: " + self.phone_number + "\n"
 
 class BaseForm(ModelForm):
-    settled_at = forms.DateTimeField(required=False)
-    settled_amount = forms.FloatField(required=False)
-    status = forms.CharField(widget=HiddenInput(), required=False, initial=Base.ERROR)
     class Meta:
         model = Base
         fields = ('payment_id', 'amount', 'payment_method', 'status', 'settled_at', 'settled_amount')
         widgets = {
-            'payment_id': forms.TextInput(attrs={'readonly': 'readonly'}),
+            'payment_id': forms.TextInput(attrs={'readonly': 'readonly', 'class': 'form-control'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+            'payment_method': forms.Select(attrs={'class': 'form-control'}, choices=(Base.CC, Base.MBWay)),
+            'settled_at': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'settled_amount': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'default': 0}),
+            'status': forms.HiddenInput(attrs={'class': 'form-control', 'default':Base.ERROR}),
         }
-
-    # This save only happens when Success
-    # def save(self, commit=True):
-    #     base = super().save(commit=False)
-    #     base.status = Base.SUCCESS
-    #     base.save(commit=commit)
-    #     return base
 
 class CreditCardForm(ModelForm):
     class Meta:
         model = CreditCard
         fields = '__all__'
         widgets = {
-            'payment_id': forms.TextInput(attrs={'readonly': 'readonly'})
+            'payment_id': forms.TextInput(attrs={'readonly': 'readonly'}),
+            'number': forms.NumberInput(attrs={'class': 'form-control', 'min': 1111111111111111, 'placeholder': 1111111111111111}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'John Doe'}),
+            'expiration_month': forms.NumberInput(attrs={'class': 'form-control', 'max': 12, 'min': 1}),
+            'expiration_year': forms.NumberInput(attrs={'class': 'form-control', 'min': 2021}),
+            'cvv': forms.NumberInput(attrs={'class': 'form-control', 'max': 999}),
         }
 
 class MbWayForm(ModelForm):
@@ -75,5 +75,6 @@ class MbWayForm(ModelForm):
         model = MbWay
         fields = '__all__'
         widgets = {
-            'payment_id': forms.TextInput(attrs={'readonly': 'readonly'})
+            'payment_id': forms.TextInput(attrs={'readonly': 'readonly'}),
+            'phone_number': forms.NumberInput(attrs={'class': 'form-control', 'maxlength': 9, 'placeholder': 910000000})
         }

@@ -10,5 +10,6 @@ urlpatterns = [
     path('processPayment/', views.processPayment, name='processPayment'),
     path('deletePayment/<payment_id>/', views.deletePayment, name='deletePayment'),
     path('settlePayment/<payment_id>/', views.settlePayment, name='settlePayment'),
-    path('searchByPaymentId/<payment_id>/', views.searchByPaymentId, name='searchByPaymentId'),
+    path('search/', views.filterView, name='searchPayments'),
+
 ]

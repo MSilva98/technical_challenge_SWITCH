@@ -1,13 +1,33 @@
-<h1>All Payments</h1>
-
-{% if allPayments %}
-    <ul>
-    {% for payment in allPayments %}
-        <li><a href="{% url 'payments:showPayment' payment.payment_id %}">{{ payment }}</a></li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No payments are available.</p>
-{% endif %}
-
-<a class="btn btn-primary" href="{% url 'payments:newPayment' %}"><button type="button" onclick="">New Payment</button></a>
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <title>All Payments</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+  </head>
+  <body>
+    
+    <main role="main" class="container">
+        <h3>All Payments</h3>
+        
+        {% if allPayments %}
+            <ul>
+                <hr />
+            {% for payment in allPayments %}
+                <li><a href="{% url 'payments:showPayment' payment.payment_id %}">{{ payment }}</a></li>
+                <hr />
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No payments are available.</p>
+        {% endif %}
+        
+        <a href="{% url 'payments:newPayment' %}"><button type="button" class="btn btn-success" onclick="">New Payment</button></a>
+        <a href="{% url 'payments:searchPayments' %}"><button style="float: right;" type="button" class="btn btn-primary" onclick="">Filter Payments</button></a>    
+  
+    </main>
+  </body>

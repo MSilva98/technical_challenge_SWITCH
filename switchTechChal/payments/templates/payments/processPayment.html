@@ -1,18 +1,42 @@
-<form action="" method="post">
-    {% csrf_token %}
-    {% for field in form %}
-        <div class="row">
-            <div class="col-md-2">    
-                {{ field.label_tag }}
-                {% if field.help_text %}
-                <sup>{{ field.help_text }}</sup>
-                {% endif %}
-                {{ field.errors }}
-            </div><div class="col-md-10 pull-left">
-                {{ field }}
-            </div>
-        </div>
-    {% endfor %}
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <title>Continue Payment</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+  </head>
+  <body>
+    <main role="main" class="container">
 
-    <input type="submit" value="Submit Payment">
-</form>
+    <h3>Continue Payment</h3>
+    <hr />
+    <form action="." method="post">  
+        {% csrf_token %}
+        <div class="form-row">
+            <div class="form-group col-12">
+                <label for="id_payment_id">Payment ID</label>
+                <input type="text" class="form-control" required id="id_payment_id" value="{{ form.payment_id.value }}" readonly='readonly' name="payment_id">
+                <input type="hidden" class="form-control" id="initial-id_payment_id" value="{{ form.payment_id.value }}" name="initial-payment_id">
+            </div>        
+        </div>
+        <div class="form-row">
+            {% for field in form %}
+            {% if field.label != 'Payment id' %}
+                <div class="form-group col-md-4 col-lg-3">
+                    <label for="id_amount">{{ field.label_tag }}</label>
+                    {{ field }}</span>
+                </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        <input type="submit" class="btn btn-success" value="Submit Payment">
+    </form>
+    </main>
+
+</body>
+
+</html>

@@ -1,27 +1,95 @@
-<h1>Filtered Payments by {{ filter }}</h1>
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <title>Filter Payments</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+  </head>
+  <body>
+    <main role="main" class="container">
+      <h3>Filter Payments</h3>
+      <hr />
+      <form method="GET" action=".">
+        <div class="form-row">
+            <div class="form-group col-12">
+                <label for="payment_id">Payment ID</label>
+                <select id="payment_id" class="form-control" name="payment_id">
+                <option selected>Choose...</option>
+                {% for p in payment_ids %}
+                <option value="{{ p }}">{{ p }}</option>
+                {% endfor %}
+                </select>
+            </div>        
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-4 col-lg-3">
+                <label for="status">Status</label>
+                <select id="status" class="form-control" name="status">
+                <option selected>Choose...</option>
+                {% for st in status %}
+                <option value="{{ st }}">{{ st }}</option>
+                {% endfor %}
+                </select>
+            </div>
+            <div class="form-group col-md-4 col-lg-3">
+                <label for="payment_method">Payment Method</label>
+                <select id="payment_method" class="form-control" name="payment_method">
+                <option selected>Choose...</option>
+                {% for p in pay_method %}
+                <option value="{{ p }}">{{ p }}</option>
+                {% endfor %}
+                </select>
+            </div>
+            <div class="form-group col-md-4 col-lg-3">
+                <label for="min_amount">Minimum Amount</label>
+                <input type="number" min=0 class="form-control" id="min_amount" placeholder="0" name="min_amount">
+            </div>
+            <div class="form-group col-md-4 col-lg-3">
+                <label for="max_amount">Maximum Amount</label>
+                <input type="number" min=0 class="form-control" id="max_amount" placeholder="10000?" name="max_amount">
+            </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-md-2 col-lg-3">
+            <label for="min_created_at">Minimum creation date</label>
+            <input type="date" class="form-control" id="min_created_at" name="min_created_at">
+          </div>
+          <div class="form-group col-md-2 col-lg-3">
+            <label for="max_created_at">Maximum creation date</label>
+            <input type="date" class="form-control" id="max_created_at" name="max_created_at">
+          </div>
+          <div class="form-group col-md-2 col-lg-3">
+            <label for="min_settled_at">Minimum settle date</label>
+            <input type="date" class="form-control" id="min_settled_at" name="min_settled_at">
+          </div>
+          <div class="form-group col-md-2 col-lg-3">
+            <label for="max_settled_at">Maximum settle date</label>
+            <input type="date" class="form-control" id="max_settled_at" name="max_settled_at">
+          </div>
+        </div>
+        <a href="{% url 'payments:allPayments' %}"><button type="button" class="btn btn-primary" onclick="">Back</button></a>
+        <a href="{% url 'payments:searchPayments' %}"><button style="float: right; margin-left: 1%;" type="button" class="btn btn-warning">Clear Filters</button></a>
+        <button style="float: right;" type="submit" class="btn btn-success">Search</button>
+    </form>
+      <hr />
 
-{% if payment_id %}
-<b>{{ filter }}:</b> {{payment_id }}
-{% elif min %}
-<b>{{ filter }}:</b><p>Min: {{ min }}</p><p>Max:{{max}}</p>
-{% elif status %}
-<b>{{ filter }}:</b> {{status}}
-{% elif method %}
-<b>{{ filter }}:</b> {{method}}
-{% endif %}
+      <div class="row">
+        <ul>
+          {% for payment in payments %}
+            <li>
+                <a href="{% url 'payments:showPayment' payment.payment_id %}">{{ payment }}</a>
+            </li>
+            <hr />
+          {% endfor %}
+        </ul>
+      </div>
 
+    </main>
 
-{% if allPayments %}
-    <ul>
-    {% for payment in allPayments %}
-        <li><a href="{% url 'payments:showPayment' payment.payment_id %}">{{ payment }}</a></li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No payments are available.</p>
-{% endif %}
+</body>
 
-
-<a class="btn btn-primary" href="{% url 'payments:allPayments' %}"><button type="button" onclick="">Back</button></a>
-
-
+</html>
