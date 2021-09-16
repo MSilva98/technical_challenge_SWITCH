@@ -25,8 +25,7 @@ SECRET_KEY = 'b^f2$!8uubj==-x2grida6&g77c8a8&wg@6z@5f7nz+e111idq'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-# ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['172.26.1.1']
 
 
 # Application definition
@@ -81,8 +80,8 @@ DATABASES = {
         'NAME': 'payments',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': '0.0.0.0',
-        'PORT': 5432,
+        'HOST': '172.26.1.3',
+        'PORT': 5433,
         'CLIENT_ENCODING': 'UTF8',
     },
 }

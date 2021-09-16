@@ -16,8 +16,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.urls.conf import include
+from django.views.generic import RedirectView
 
 urlpatterns = [
     path('api/refunds/', include('refunds.urls')),
     path('admin/', admin.site.urls),
+    path('', RedirectView.as_view(url='/api/refunds', permanent=True))
 ]

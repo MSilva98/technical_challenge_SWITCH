@@ -14,7 +14,7 @@
 
     <h3>New Refund</h3>
     <hr />
-    <form action="." method="post">  
+    <form action="{{payment_id}}" method="post">  
         {% csrf_token %}
         <div class="form-row">
             <div class="form-group col-12">
@@ -23,15 +23,16 @@
                 <input type="hidden" class="form-control" id="initial-id_refund_id" value="{{ form.refund_id.value }}" name="initial-refund_id">
             </div>        
         </div>
+        
         <div class="form-row">
-            <div class="form-group col-12">
+            <div class="form-group col-8">
                 <label for="id_payment_id">Payment ID</label>
-                <select id="id_payment_id" class="form-control" name="payment_id">
-                {% for p in payment_amount %}
-                <option value="{{ p.0 }}">{{ p.0 }}  Remaining Amount: {{ p.1 }}</option>
-                {% endfor %}
-                </select>
-            </div>       
+                <input type="text" class="form-control" required id="id_payment_id" value="{{ payment_id }}" readonly='readonly' name="payment_id">
+            </div>     
+            <div class="form-group col-4">
+                <label for="">Amount that can be refunded</label>
+                <input type="text" class="form-control" value="{{ remaining_amount }}" readonly='readonly' name="remaining_amount_id">
+            </div>   
         </div>
 
         <div class="form-row">

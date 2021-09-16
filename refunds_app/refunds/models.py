@@ -6,7 +6,7 @@ import uuid
 
 class Refund(models.Model):
     refund_id = models.UUIDField(max_length=200, primary_key=True, default=uuid.uuid4)
-    payment_id = models.CharField(max_length=200)
+    payment_id = models.CharField(max_length=200, default='v')
     created_at = models.DateTimeField(auto_now_add=True)
     amount = models.FloatField()
     def __str__(self):
@@ -18,6 +18,6 @@ class RefundForm(ModelForm):
         fields = '__all__'
         widgets = {
             'refund_id': forms.TextInput(attrs={'readonly': 'readonly', 'class': 'form-control'}),
-            'payment_id': forms.Select(attrs={'class': 'form-control'}),
+            'payment_id': forms.TextInput(attrs={'readonly': 'readonly', 'class': 'form-control'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'placeholder': 0}),
         }

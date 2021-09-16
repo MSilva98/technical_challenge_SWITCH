@@ -1,12 +1,13 @@
-from django import forms
-from django.db.models import base
-from django.db.models.base import Model
 from django.forms.models import model_to_dict
 from django.http.response import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+import requests
 
 from .models import Base, CreditCard, MbWay, BaseForm, CreditCardForm, MbWayForm
 from .forms import SettleForm
+
+# Refunds microservice url
+refunds_url = 'http://172.26.1.2:2222/api/refunds/'
 
 def listAllPayments(request):
     allPayments = Base.objects.all()
@@ -32,11 +33,23 @@ def findPayment(payment_id):
 
 def getPayment(request, payment_id):
     payment, _ = findPayment(payment_id)
-    return JsonResponse(model_to_dict(payment))
+    paymentDict = model_to_dict(payment)
+    paymentDict['created_at'] = payment.created_at
+    return JsonResponse(paymentDict)
 
 def showPayment(request, payment_id):
+    r = requests.get(refunds_url+'refundedAmount/'+payment_id)
+    if r.status_code == 200:
+        data = r.json()
     payment, full_payment = findPayment(payment_id)
-    return render(request, 'payments/showPayment.html', {'payment_id': payment_id, 'payment': full_payment, 'notSettled': payment.amount!=payment.settled_amount})
+    context = {
+        'payment_id': payment_id, 
+        'payment': full_payment, 
+        'notSettled': payment.amount!=payment.settled_amount, 
+        'fullyRefunded': payment.amount==data['refunded_amount'], 
+        'refunds_url': refunds_url
+    }
+    return render(request, 'payments/showPayment.html', context)
 
 def is_valid_queryparam(param):
     return param != '' and param is not None

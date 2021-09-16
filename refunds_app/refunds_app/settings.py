@@ -25,7 +25,7 @@ SECRET_KEY = 'lpj^#2#964l=ryq%#zk0qwc@zao6y%*buq^t$(q=nu(v6ufw+%'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['172.26.1.2']
 
 
 # Application definition
@@ -80,8 +80,8 @@ DATABASES = {
         'NAME': 'refunds',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': '0.0.0.0',
-        'PORT': 5432,
+        'HOST': '172.26.1.4',
+        'PORT': 5434,
         'CLIENT_ENCODING': 'UTF8'
     }
 }

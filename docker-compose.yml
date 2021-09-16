@@ -1,0 +1,73 @@
+version: "3.3"
+
+services:
+  # Payments
+  payments_db:
+    image: postgres
+    # volumes:
+    #   - ./payments_app/data/db:/var/lib/postgresql/data
+    environment: 
+      - POSTGRES_DB=payments
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    command: -p 5433
+    networks: 
+      my_net:
+        ipv4_address: 172.26.1.3
+        
+  payments_app:
+    build: 
+      context: .
+      dockerfile: payments_app/Dockerfile
+    command: bash -c "python manage.py makemigrations && 
+                      python manage.py migrate && 
+                      python manage.py runserver 172.26.1.1:1111"
+    restart: on-failure:5
+    ports:
+      - "1111:1111"
+    expose: 
+      - "1111"
+    depends_on:
+      - payments_db
+    networks: 
+      my_net:
+        ipv4_address: 172.26.1.1
+
+  # Refunds
+  refunds_db:
+    image: postgres
+    # volumes:
+    #   - ./refunds_app/data/db:/var/lib/postgresql/data
+    environment: 
+      - POSTGRES_DB=refunds
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    command: -p 5434
+    networks: 
+      my_net:
+        ipv4_address: 172.26.1.4
+
+  refunds_app:
+    build: 
+      context: .
+      dockerfile: refunds_app/Dockerfile
+    command: bash -c "python manage.py makemigrations && 
+                      python manage.py migrate && 
+                      python manage.py runserver 172.26.1.2:2222"
+    restart: on-failure:5
+    ports:
+      - "2222:2222"
+    expose: 
+      - "2222"
+    depends_on:
+      - refunds_db
+    networks: 
+      my_net:
+        ipv4_address: 172.26.1.2
+
+networks:
+  my_net:
+    ipam: 
+      driver: default
+      config:
+        - subnet: 172.26.0.0/16

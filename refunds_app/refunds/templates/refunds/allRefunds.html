@@ -12,27 +12,38 @@
   <body>
     
     <main role="main" class="container">
-        <h3>All Refunds</h3>
-        
-        {% if allRefunds %}
+      <div class="form-row">
+        <div class="form-group col-8">
+          <h3>All Refunds</h3>
+          {% if allRefunds %}
             <ul>
-                <hr />
-            {% for refund in allRefunds %}
+              <hr />
+              {% for refund in allRefunds %}
                 <li>
                   <b>Refund ID:</b><a href="{% url 'refunds:showRefund' refund.refund_id %}"> {{ refund.refund_id }}</a>
+                </li>
+                <li>
+                  <b>Amount:</b>{{ refund.amount }}</a>
                 </li>
                 <li>
                   <b>Associated Payment ID:</b><a href="{{payments_url}}payment/{{refund.payment_id}}"> {{ refund.payment_id }}</a>
                 </li>
                 <hr />
-            {% endfor %}
+              {% endfor %}
             </ul>
-        {% else %}
+          {% else %}
             <p>No refunds are available.</p>
-        {% endif %}
-        
-        <a href="{% url 'refunds:newRefund' %}"><button type="button" class="btn btn-success" onclick="">New Refund</button></a>
-        <a href="{% url 'refunds:searchRefunds' %}"><button style="float: right;" type="button" class="btn btn-primary" onclick="">Filter Refunds</button></a>    
-  
+            <hr />
+          {% endif %}
+          <a href="{% url 'refunds:searchRefunds' %}"><button type="button" class="btn btn-primary" onclick="">Filter Refunds</button></a>    
+        </div>
+        <form method="GET" action=".">
+          <div class="form-group col-lg-12">
+            <label for="timeout"><h4>Refund Timeout</h4>(Currently at {{refundTimeout}} minutes)</label>
+            <input type="text" class="form-control" required id="timeout" name="timeout" placeholder="Minutes...">
+            <button type="submit" style="margin-top: 5px;" class="btn btn-success">Set Timeout</button>
+          </div>       
+        </form>
+      </div>
     </main>
   </body>

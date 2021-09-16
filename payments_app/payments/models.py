@@ -1,10 +1,7 @@
-from enum import Enum
 from django import forms
 from django.db import models
 from django.forms import ModelForm
 import uuid
-
-
 
 class Base(models.Model):
     CC = "credit_card"

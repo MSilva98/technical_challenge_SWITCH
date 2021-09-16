@@ -1,16 +1,27 @@
 from django.contrib import messages
 from django.http import response
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.cache import cache_control
 from .models import Refund, RefundForm
 import requests
+import datetime
 
-# Payments URL
-# url = 'http://127.0.0.1:1111/api/payments/'
-url = 'http://127.0.0.1:8000/api/payments/'
+# Payments microservice URL
+payments_url = 'http://172.26.1.1:1111/api/payments/'
+global refundTimeout 
+refundTimeout = 30
+
+def is_valid_queryparam(param):
+    return param != '' and param is not None
 
 def listAllRefunds(request):
+    global refundTimeout
     allRefunds = Refund.objects.all()
-    return render(request, 'refunds/allRefunds.html', {'allRefunds': allRefunds, 'payments_url': url})
+    t = request.GET.get('timeout')
+    if is_valid_queryparam(t):
+        refundTimeout = t
+        print("\n\n\nTIMEOUT RESET: " + str(refundTimeout))
+    return render(request, 'refunds/allRefunds.html', {'allRefunds': allRefunds, 'payments_url': payments_url, 'refundTimeout': refundTimeout})
 
 def getTotalAmount(payment_id):
     refunds = Refund.objects.filter(payment_id=payment_id)
@@ -19,39 +30,43 @@ def getTotalAmount(payment_id):
         amount += refund.amount
     return amount
 
-def newRefund(request):
-    # Request Payments API all payments
-    r = requests.get(url+'getAllPayments/')
-    refundedPayments = Refund.objects.values_list('payment_id', flat=True)
+def refundedAmount(request, payment_id):
+    return response.JsonResponse({'refunded_amount': getTotalAmount(payment_id)})
+
+def refundTimePassed(payment_date):
+    global refundTimeout
+    date, time = payment_date.split('T')
+    y,m,d = date.split('-')
+    h,mn,s = time[:-4].split(':')
+    creation_date = datetime.datetime(int(y),int(m),int(d),int(h),int(mn),int(s))
+    date_now = datetime.datetime.now()
+    delta = datetime.timedelta(minutes=refundTimeout)
+    return date_now-delta > creation_date
+
+@cache_control(no_cache=True,smust_validate=True,no_store=True)
+def newRefund(request, payment_id):
+    global refundTimeout
+    # Request Payments API information on payment with payment_id
+    r = requests.get(payments_url+'getPayment/'+payment_id)
     if r.status_code == 200:
-        allPayments = r.json()['payments']
-        # tupple with payment_id and remainig amount according to previous refunds
-        payment_amount = []
-        for p in allPayments:
-            p_id = p['payment_id']
-            remainder = p['amount']-getTotalAmount(p_id)
-            if remainder > 0:
-                payment_amount.append((p_id, remainder))
-
-        form = RefundForm(request.POST or None)
-        if form.is_valid():
-            choosenPaymentID = form['payment_id'].value()
-            if choosenPaymentID in refundedPayments:
-                totalPaid = getTotalAmount(choosenPaymentID)
-                for p in allPayments:
-                    if p['payment_id'] == choosenPaymentID:
-                        # all refunds associated with this payment_id + the payment that will be done now can't surpass the payment amount
-                        if totalPaid+float(form['amount'].value()) > p['amount']:
-                            messages.info(request, 'Cannot create a new refund with that amount. Max amount is: ' + str(p['amount']-totalPaid))
-                            return render(request, 'refunds/createRefund.html', {'form': form, 'payment_amount': payment_amount})  
-            form.save()
-            return redirect('refunds:allRefunds')
-        return render(request, 'refunds/createRefund.html', {'form': form, 'payment_amount': payment_amount})
-    else:
-        return response.Http404('Could not find any payment.')
-
-def is_valid_queryparam(param):
-    return param != '' and param is not None
+        payment = r.json()
+        payment_date = payment['created_at']
+        if refundTimePassed(payment_date):
+            return response.HttpResponse('Payments cannot be refunded after ' + str(refundTimeout) + " minutes of the creation date.")
+        totalPaid = getTotalAmount(payment_id)
+        remaining_amount = payment['amount']-totalPaid
+        if remaining_amount > 0:
+            form = RefundForm(request.POST or None)
+            if form.is_valid():
+                # all refunds associated with this payment_id + payment that will be done now can't surpass the payment amount
+                if totalPaid+float(form['amount'].value()) > payment['amount']:
+                    messages.info(request, 'Cannot create a new refund with that amount. Max amount is: ' + str(payment['amount']-totalPaid))
+                    return render(request, 'refunds/createRefund.html', {'form': form, 'payment_id': payment_id, 'remaining_amount': remaining_amount})  
+                form.save()
+                return redirect(payments_url+'payment/'+payment_id)
+            return render(request, 'refunds/createRefund.html', {'form': form, 'payment_id': payment_id, 'remaining_amount': remaining_amount})
+        else:
+            return redirect(payments_url+'payment/'+payment_id)
 
 def filter(request):
     refunds = Refund.objects.all()
@@ -72,11 +87,12 @@ def filterView(request):
     return render(request, 'refunds/filterRefunds.html', {'refunds': filter(request), 'refund_ids': all_refund_ids, 'payment_ids': all_payment_ids})
 
 def paymentToString(payment):
-    return 'Payment ID:' + payment['payment_id'] + ", Amount: " + str(payment['amount']) + "€, Method: " + payment['payment_method'] + ", Status: " + payment['status'] + "\n" 
+    return 'Payment ID:' + payment['payment_id'] + ", Amount: " + str(payment['amount']) + "€, Method: " + payment['payment_method'] + ", Status: " + payment['status'] + ", Created at: " + payment['created_at'] + "\n" 
 
 def showRefund(request, refund_id):
     refund = get_object_or_404(Refund, refund_id=refund_id)
-    r = requests.get(url+'getPayment/'+refund.payment_id)
+    r = requests.get(payments_url+'getPayment/'+refund.payment_id)
     if r.status_code == 200:
         data = r.json()
-    return render(request, 'refunds/showRefund.html', {'refund_id': refund_id, 'refund': refund, 'payment': paymentToString(data)})
+        return render(request, 'refunds/showRefund.html', {'refund_id': refund_id, 'refund': refund, 'payment': paymentToString(data)})
+    return response.HttpResponseServerError("Could not access payments service!")

@@ -22,11 +22,15 @@
         <hr />
         <a href="{% url 'payments:deletePayment' payment_id %}"><button class="btn btn-danger" type="button" >Delete Payment</button></a>
         <a href="{% url 'payments:allPayments' %}"><button class="btn btn-primary" style="float: right;" type="button" >All Payments</button></a>
-        <!-- <a href="{% url 'payments:searchPayments' %}"><button class="btn btn-primary" style="float: right; margin-right: 4px;" type="button" >Filter Payments</button></a> -->
+        <!-- <a href="{% url 'payments:searchPayments' %}"><button class="btn btn-primary" style="float: right; margin-right: 4px;" type="button" >Filter Payments</button></a> -->   
 
         {% if notSettled %}
             <a href="{% url 'payments:settlePayment' payment_id %}"><button class="btn btn-success" type="button" >Settle Payment</button></a>
         {% endif %}
-  
+
+        {% if not fullyRefunded %}
+        <a href="{{refunds_url}}newRefund/{{payment_id}}"><button class="btn btn-primary" style="float: right; margin-right: 4px;" type="submit" >Ask for Refund</button>
+        </a>
+        {% endif %}
     </main>
   </body>
