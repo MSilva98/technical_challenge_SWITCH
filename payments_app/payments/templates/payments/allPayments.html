@@ -18,7 +18,7 @@
             <ul>
                 <hr />
             {% for payment in allPayments %}
-                <li><a href="{% url 'payments:showPayment' payment.payment_id %}">{{ payment }}</a></li>
+                <li><a href="{% url 'payments:showPaymentGUI' payment.payment_id %}">{{ payment }}</a></li>
                 <hr />
             {% endfor %}
             </ul>
@@ -26,8 +26,8 @@
             <p>No payments are available.</p>
         {% endif %}
         
-        <a href="{% url 'payments:newPayment' %}"><button type="button" class="btn btn-success" onclick="">New Payment</button></a>
-        <a href="{% url 'payments:searchPayments' %}"><button style="float: right;" type="button" class="btn btn-primary" onclick="">Filter Payments</button></a>    
+        <a href="{% url 'payments:newPaymentGUI' %}"><button type="button" class="btn btn-success" onclick="">New Payment</button></a>
+        <a href="{% url 'payments:filterPaymentsGUI' %}"><button style="float: right;" type="button" class="btn btn-primary" onclick="">Filter Payments</button></a>    
   
     </main>
   </body>

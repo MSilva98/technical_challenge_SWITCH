@@ -20,13 +20,13 @@
               <hr />
               {% for refund in allRefunds %}
                 <li>
-                  <b>Refund ID:</b><a href="{% url 'refunds:showRefund' refund.refund_id %}"> {{ refund.refund_id }}</a>
+                  <b>Refund ID:</b><a href="{% url 'refunds:showRefundGUI' refund.refund_id %}"> {{ refund.refund_id }}</a>
                 </li>
                 <li>
                   <b>Amount:</b>{{ refund.amount }}</a>
                 </li>
                 <li>
-                  <b>Associated Payment ID:</b><a href="{{payments_url}}payment/{{refund.payment_id}}"> {{ refund.payment_id }}</a>
+                  <b>Associated Payment ID:</b><a href="{{payments_url}}paymentGUI/{{refund.payment_id}}"> {{ refund.payment_id }}</a>
                 </li>
                 <hr />
               {% endfor %}
@@ -35,7 +35,7 @@
             <p>No refunds are available.</p>
             <hr />
           {% endif %}
-          <a href="{% url 'refunds:searchRefunds' %}"><button type="button" class="btn btn-primary" onclick="">Filter Refunds</button></a>    
+          <a href="{% url 'refunds:filterRefundsGUI' %}"><button type="button" class="btn btn-primary" onclick="">Filter Refunds</button></a>    
         </div>
         <form method="GET" action=".">
           <div class="form-group col-lg-12">

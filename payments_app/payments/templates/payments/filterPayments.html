@@ -71,8 +71,8 @@
             <input type="date" class="form-control" id="max_settled_at" name="max_settled_at">
           </div>
         </div>
-        <a href="{% url 'payments:allPayments' %}"><button type="button" class="btn btn-primary" onclick="">Back</button></a>
-        <a href="{% url 'payments:searchPayments' %}"><button style="float: right; margin-left: 1%;" type="button" class="btn btn-warning">Clear Filters</button></a>
+        <a href="{% url 'payments:allPaymentsGUI' %}"><button type="button" class="btn btn-primary" onclick="">Back</button></a>
+        <a href="{% url 'payments:filterPaymentsGUI' %}"><button style="float: right; margin-left: 1%;" type="button" class="btn btn-warning">Clear Filters</button></a>
         <button style="float: right;" type="submit" class="btn btn-success">Search</button>
     </form>
       <hr />
@@ -81,7 +81,7 @@
         <ul>
           {% for payment in payments %}
             <li>
-                <a href="{% url 'payments:showPayment' payment.payment_id %}">{{ payment }}</a>
+                <a href="{% url 'payments:showPaymentGUI' payment.payment_id %}">{{ payment }}</a>
             </li>
             <hr />
           {% endfor %}

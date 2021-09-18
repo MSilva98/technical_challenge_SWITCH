@@ -36,8 +36,8 @@
                 </select>
             </div>        
         </div>
-        <a href="{% url 'refunds:allRefunds' %}"><button type="button" class="btn btn-primary" onclick="">Back</button></a>
-        <a href="{% url 'refunds:searchRefunds' %}"><button style="float: right; margin-left: 1%;" type="button" class="btn btn-warning">Clear Filters</button></a>
+        <a href="{% url 'refunds:allRefundsGUI' %}"><button type="button" class="btn btn-primary" onclick="">Back</button></a>
+        <a href="{% url 'refunds:filterRefundsGUI' %}"><button style="float: right; margin-left: 1%;" type="button" class="btn btn-warning">Clear Filters</button></a>
         <button style="float: right;" type="submit" class="btn btn-success">Search</button>
     </form>
       <hr />
@@ -46,7 +46,7 @@
         <ul>
           {% for refund in refunds %}
             <li>
-                <a href="{% url 'refunds:showRefund' refund.refund_id %}">{{ refund }}</a>
+                <a href="{% url 'refunds:showRefundGUI' refund.refund_id %}">{{ refund }}</a>
             </li>
             <hr />
           {% endfor %}

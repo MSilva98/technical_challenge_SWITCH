@@ -36,7 +36,7 @@ class Base(models.Model):
             return baseStr
 
 class CreditCard(models.Model):
-    payment_id = models.ForeignKey(Base, on_delete=models.CASCADE)  # Foreign key to Base
+    payment_id = models.OneToOneField(Base, on_delete=models.CASCADE)  # Foreign key to Base
     number = models.CharField(max_length=16)                                     
     name = models.CharField(max_length=30)                             
     expiration_month = models.CharField(max_length=2)   
@@ -46,7 +46,7 @@ class CreditCard(models.Model):
         return str(self.payment_id) + ", Card Number: " + self.number + ", Name: " + self.name + ", Exp. Month: " + self.expiration_month + ", Exp. Year: " + self.expiration_year + ", CVV: " + self.cvv + "\n"
         
 class MbWay(models.Model):
-    payment_id = models.ForeignKey(Base, on_delete=models.CASCADE)  # Foreign key to base
+    payment_id = models.OneToOneField(Base, on_delete=models.CASCADE)  # Foreign key to base
     phone_number = models.CharField(max_length=9)
     def __str__(self):
         return str(self.payment_id) + ", Phone Number: " + self.phone_number + "\n"
