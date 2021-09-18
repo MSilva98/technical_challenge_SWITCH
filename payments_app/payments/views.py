@@ -1,6 +1,6 @@
 from django.forms.models import model_to_dict
 from django.http.request import HttpRequest
-from django.http.response import HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.http.response import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from .models import Base, CreditCard, MbWay, BaseForm, CreditCardForm, MbWayForm
 from kafka import KafkaProducer
@@ -21,11 +21,9 @@ def kafkaProd(topic, key, data):
     try:
         producer.send(topic, key=bytes(key,'utf-8'), value=serialized_data)
         producer.flush()
-        print("PRODUCER SENT MESSAGE")
-        return HttpResponse(200)
+        return True
     except AssertionError:
-        print("DID NOT SEND MESSAGE")
-        return HttpResponse(500)
+        return False
 
 #
 # Auxiliar functions
@@ -108,17 +106,20 @@ def listAllPayments(request):
         refundDict = model_to_dict(p)
         refundDict['created_at'] = p.created_at
         allPayments.append(refundDict)
-    return JsonResponse({'payments': allPayments})
+    return JsonResponse({'payments': allPayments}, status=200)
 
 def showPayment(request, payment_id):
     payment, fullPayment = findPayment(payment_id)
+    if payment == None:
+        return HttpResponseNotFound('Payment not found')
     paymentDict = model_to_dict(payment)
     paymentDict['created_at'] = payment.created_at
-    return JsonResponse({'base': paymentDict, 'full': model_to_dict(fullPayment)})
+    paymentDict['additional_parameters'] = model_to_dict(fullPayment)
+    return JsonResponse({'base': paymentDict}, status=200)
 
 def filterPayments(request):
     payments = [model_to_dict(p) for p in filter(request)]
-    return JsonResponse({'filteredPayments': payments})
+    return JsonResponse({'filteredPayments': payments}, status=200)
 
 @csrf_exempt
 def newPayment(request):
@@ -155,21 +156,24 @@ def newPayment(request):
         else:
             payment.status = Base.ERROR
             payment.save()
-            return HttpResponse(400)
+            return HttpResponseBadRequest('Bad payment method')
         
         paymentDict = model_to_dict(payment)
         paymentDict['created_at'] = payment.created_at
-        kafkaProd(topic='payment', key=payment.payment_id, data=paymentDict)
-        return HttpResponse('New payment created.')
+        if kafkaProd(topic='payment', key=str(payment.payment_id), data=paymentDict):
+            return HttpResponse('New payment created.',status=200)
+        else:
+            payment.delete()
+            return HttpResponse('Payment could not be published to topic.', status=503)
     return HttpResponseBadRequest("Data not found.")        
 
 def settlePayment(request, payment_id):
     settlePayment_aux(payment_id)
-    return HttpRequest('Payment settled.')
+    return HttpResponse('Payment settled.', status=200)
 
 def deletePayment(request, payment_id):
     get_object_or_404(Base, payment_id=payment_id).delete()
-    return HttpResponse('Payment ' + payment_id + ' deleted.')
+    return HttpResponse('Payment ' + payment_id + ' deleted.', status=200)
 
 #
 # Views that render a GUI

@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.forms.models import model_to_dict
-from django.http.response import HttpResponse, HttpResponseBadRequest, HttpResponseServerError, JsonResponse
+from django.http.response import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from .models import Refund, RefundForm
@@ -69,15 +69,15 @@ def listAllRefunds(request):
         refundDict = model_to_dict(r)
         refundDict['created_at'] = r.created_at
         allRefunds.append(refundDict)
-    return JsonResponse({'refunds': allRefunds})
+    return JsonResponse({'refunds': allRefunds}, status=200)
 
 @csrf_exempt
 def setRefundTimeout(request):
     global refundTimeout
     t = request.POST.get('timeout')
     if is_valid_queryparam(t):
-        refundTimeout = t
-        return HttpResponse('Refund timeout successfully set to ' + str(refundTimeout))
+        refundTimeout = int(t)
+        return HttpResponse('Refund timeout successfully set to ' + str(refundTimeout), status=200)
     return HttpResponseBadRequest('Invalid parameter input')
 
 @csrf_exempt
@@ -88,21 +88,22 @@ def newRefund(request, payment_id):
     payment = kafkaCon(topic='payment', key=payment_id)
     if payment != None:
         totalPaid = getTotalAmount(payment_id)
-        remaining_amount = payment['amount']-totalPaid
+        remaining_amount = float(payment['amount'])-totalPaid
         if remaining_amount > 0:
             if refundTimePassed(start_date):
                 return HttpResponseServerError('Could not process refund on time.')
             else:
                 refundAmount = float(request.POST.get('refund_amount'))
                 if refundAmount > remaining_amount:
+                    return HttpResponseBadRequest('Refund amount must be less than or equal to ' + float(remaining_amount))  
+                else:
                     refund = Refund()
                     refund.payment_id = payment_id
                     refund.amount = refundAmount
-                    return HttpResponseBadRequest('Refund amount must be less than or equal to ' + float(remaining_amount))  
-                else:
-                    return HttpResponse('New refund created.')
+                    refund.save()
+                    return HttpResponse('New refund created.', status=200)
         else:
-            return HttpResponse('Payment with ID ' + str(payment_id) + " has been fully refunded.")
+            return HttpResponseNotAllowed('Payment with ID ' + str(payment_id) + " has been fully refunded already.")
 
 def showRefund(request, refund_id):
     refund = get_object_or_404(Refund, refund_id=refund_id)
@@ -110,12 +111,12 @@ def showRefund(request, refund_id):
     if payment != None:
         refundDict = model_to_dict(refund)
         refundDict['created_at'] = refund.created_at
-        return JsonResponse({'refund': refundDict, 'payment': payment})      
+        return JsonResponse({'refund': refundDict, 'payment': payment}, status=200)      
     return HttpResponseServerError("Could not access payments service!")
 
 def filterRefunds(request):
     refunds= [model_to_dict(r) for r in filter(request)]
-    return JsonResponse({'filteredRefunds': refunds})
+    return JsonResponse({'filteredRefunds': refunds}, status=200)
 
 #
 # Views that render a GUI
@@ -135,7 +136,7 @@ def newRefundGUI(request, payment_id):
 
     if payment != None:
         totalPaid = getTotalAmount(payment_id)
-        remaining_amount = payment['amount']-totalPaid
+        remaining_amount = float(payment['amount'])-totalPaid
         if remaining_amount > 0:
             form = RefundForm(request.POST or None)
             if form.is_valid() and not refundTimePassed(start_date):
@@ -143,10 +144,10 @@ def newRefundGUI(request, payment_id):
                     messages.info(request, 'Cannot create a new refund with that amount. Max amount is: ' + str(remaining_amount))
                     return render(request, 'refunds/createRefund.html', {'form': form, 'payment_id': payment_id, 'remaining_amount': remaining_amount})  
                 form.save()
-                return redirect(payments_url+'payment/'+payment_id)
+                return redirect(payments_url+'paymentGUI/'+payment_id)
             return render(request, 'refunds/createRefund.html', {'form': form, 'payment_id': payment_id, 'remaining_amount': remaining_amount})
         else:
-            return HttpResponse('Payment with ID ' + str(payment_id) + " has been fully refunded.")
+            return HttpResponseNotAllowed('Payment with ID ' + str(payment_id) + " has been fully refunded already.")
 
 def filterRefundsGUI(request):
     all_refund_ids = list(Refund.objects.all().values_list('refund_id', flat=True))
